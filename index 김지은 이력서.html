@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>김지은 바이오 연구자 포트폴리오</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+body{font-family:'Noto Sans KR',sans-serif}
+.hero{background:#051c2c}
+.glow{box-shadow:0 0 30px #00a9e0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+function App(){
+const skills=['단백질 발현','CRISPR','RNA-seq','바이오마커 파이프라인','scRNA-seq','유세포 분석'];
+const projects=['암세포 단백질 발현 분석','CRISPR 유전자 편집 검증','RNA-seq 바이오마커 Pipeline'];
+return <div className="bg-gray-50">
+<nav className="fixed top-0 w-full bg-white/80 backdrop-blur p-4 z-10 border-b">
+<div className="max-w-6xl mx-auto flex justify-between"><b className="text-xl">KIM JI EUN</b><button className="bg-blue-700 text-white px-4 py-2 rounded-full">이력서 다운로드</button></div>
+</nav>
+<section className="hero min-h-screen text-white pt-40 px-6">
+<div className="max-w-6xl mx-auto">
+<p className="text-cyan-300">BIO RESEARCH PORTFOLIO</p>
+<h1 className="text-6xl font-bold mt-5">김지은</h1>
+<h2 className="text-3xl mt-3">신약 타겟 발굴 연구자</h2>
+<p className="text-xl mt-8">Wet Lab과 Dry Lab을 융합한 바이오 연구 포트폴리오</p>
+<button className="mt-8 bg-cyan-500 px-6 py-3 rounded-full glow">연구 프로젝트 보기</button>
+</div>
+</section>
+<section className="max-w-6xl mx-auto p-8">
+<h2 className="text-4xl font-bold">핵심 기술 역량</h2>
+<div className="grid md:grid-cols-3 gap-5 mt-6">{skills.map(s=><div className="bg-white p-6 rounded-xl shadow text-xl">{s}</div>)}</div>
+</section>
+<section className="max-w-6xl mx-auto p-8">
+<h2 className="text-4xl font-bold">연구 프로젝트</h2>
+<div className="grid md:grid-cols-3 gap-5 mt-6">{projects.map(p=><div className="bg-white p-6 rounded-xl shadow"><h3 className="font-bold text-xl">{p}</h3><p className="mt-3">배경 · 목적 · 방법론 · 결과 · 성과</p></div>)}</div>
+</section>
+<section className="bg-[#051c2c] text-white p-12">
+<div className="max-w-6xl mx-auto"><h2 className="text-4xl font-bold">Contact & Collaboration</h2>
+<div className="grid md:grid-cols-3 gap-5 mt-8"><div>Email</div><div>LinkedIn</div><div>Google Scholar</div></div></div>
+</section>
+<footer className="p-6 text-center">© 2026 Kim Ji Eun</footer>
+</div>
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
