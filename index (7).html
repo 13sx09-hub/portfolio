@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio CSV Dashboard (portfolio.csv)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:rgba(255,255,255,.05);
+      --panel2:rgba(255,255,255,.08);
+      --text:#e9eefc;
+      --muted:#b9c2e8;
+      --accent:#6aa9ff;
+      --border:rgba(255,255,255,.12);
+      --good:#3ddc97;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 18px 70px;
+    }
+    header{
+      padding:20px 18px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+    }
+    h1{
+      margin:0 0 6px;
+      font-size:26px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:16px;
+    }
+    .card{
+      grid-column: span 6;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:var(--panel);
+    }
+    .card.sm{ grid-column: span 3; }
+    .card h2{
+      margin:0 0 8px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+    }
+    .big{
+      font-size:26px;
+      margin:0;
+      font-family: var(--mono);
+      font-weight:800;
+    }
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border:1px solid rgba(106,169,255,.35);
+      color:#dbe8ff;
+      border-radius:999px;
+      background:rgba(106,169,255,.10);
+      font-size:13px;
+      margin-right:6px;
+      margin-top:6px;
+    }
+    section{
+      margin-top:18px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:var(--panel);
+      overflow:hidden;
+    }
+    .section-head{
+      padding:14px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .section-head h3{
+      margin:0;
+      font-size:16px;
+    }
+    .section-head .hint{
+      color:var(--muted);
+      font-size:13px;
+      margin:0;
+    }
+    .content{
+      padding:14px 14px 18px;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size:13px;
+      overflow:auto;
+      display:block;
+      max-width:100%;
+    }
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      vertical-align:top;
+      text-align:left;
+      line-height:1.35;
+    }
+    th{
+      color:var(--muted);
+      font-weight:800;
+      background:rgba(255,255,255,.03);
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .mono{ font-family:var(--mono); }
+    .right{ text-align:right; }
+    .muted{ color:var(--muted); }
+    .row-table-wrap{
+      max-height:420px;
+      overflow:auto;
+    }
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:flex-end;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-weight:700;
+      letter-spacing:.3px;
+    }
+    input, select{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:10px;
+      color:var(--text);
+      padding:10px 10px;
+      outline:none;
+      min-width:180px;
+    }
+    input::placeholder{ color:rgba(233,238,252,.55); }
+    button{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      background:rgba(106,169,255,.18);
+      color:#dbe8ff;
+      font-weight:800;
+      cursor:pointer;
+      border:1px solid rgba(106,169,255,.45);
+    }
+    button:hover{
+      background:rgba(106,169,255,.26);
+    }
+    .status{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.2);
+      color:var(--muted);
+      line-height:1.6;
+      font-size:13px;
+    }
+    .kpi{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      margin-top:8px;
+    }
+    .badge{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    details{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      margin-top:10px;
+      padding:10px 10px;
+    }
+    summary{
+      cursor:pointer;
+      font-weight:900;
+      color:#dbe8ff;
+      outline:none;
+    }
+    .value-list{
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .chip{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.03);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--text);
+      max-width: 100%;
+      word-break: break-word;
+    }
+    .footer{
+      margin-top:14px;
+      color:rgba(185,194,232,.85);
+      font-size:12px;
+      line-height:1.6;
+    }
+    .skeleton{
+      opacity:.8;
+      font-style:italic;
+    }
+    @media (max-width: 900px){
+      .card{ grid-column: span 12; }
+      .card.sm{ grid-column: span 6; }
+    }
+    @media (max-width: 600px){
+      .card.sm{ grid-column: span 12; }
+      input, select{ min-width: 100%; }
+      .section-head{ flex-direction:column; align-items:flex-start; }
+      .controls{ flex-direction:column; align-items:stretch; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <h1>CSV 대시보드</h1>
+      <p class="sub">
+        이 페이지는 같은 폴더에 있는 <span class="mono">portfolio.csv</span>를 읽어서
+        <b>행/열 수</b>, <b>컬럼 타입</b>, <b>숫자 통계</b>, <b>텍스트 고유값</b>, <b>결측 컬럼</b>을 자동 요약합니다.
+      </p>
+      <div class="kpi">
+        <span class="pill">Single HTML</span>
+        <span class="pill">Auto-schema</span>
+        <span class="pill">No external libs</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Rows / Columns</h2>
+        <p class="big" id="kpi-rowscols">로딩 중...</p>
+        <div class="status" id="status-1">CSV를 불러오는 중입니다.</div>
+      </div>
+      <div class="card sm">
+        <h2>Numeric columns</h2>
+        <p class="big" id="kpi-numeric">-</p>
+      </div>
+      <div class="card sm">
+        <h2>Text columns</h2>
+        <p class="big" id="kpi-text">-</p>
+      </div>
+      <div class="card sm">
+        <h2>Missing columns</h2>
+        <p class="big" id="kpi-missingcols">-</p>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h3>데이터 개요(스키마)</h3>
+          <p class="hint">각 컬럼의 추정 타입과 결측값을 표시합니다.</p>
+        </div>
+      </div>
+      <div class="content">
+        <div class="row-table-wrap">
+          <table id="schema-table">
+            <thead>
+              <tr>
+                <th style="width:22%;">컬럼명</th>
+                <th style="width:12%;">타입</th>
+                <th style="width:16%;" class="right">결측(빈칸) 개수</th>
+                <th style="width:16%;" class="right">비결측 개수</th>
+                <th style="width:34%;">요약</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" class="muted skeleton">스키마를 생성하는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h3>숫자 컬럼 통계</h3>
+          <p class="hint">최솟값 / 최댓값 / 평균(NA 제외). 실수 기준.</p>
+        </div>
+      </div>
+      <div class="content">
+        <div class="row-table-wrap">
+          <table id="numeric-table">
+            <thead>
+              <tr>
+                <th style="width:30%;">컬럼명</th>
+                <th style="width:20%;">min</th>
+                <th style="width:20%;">max</th>
+                <th style="width:20%;">avg</th>
+                <th style="width:10%;" class="right">결측</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" class="muted skeleton">숫자 통계를 계산하는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h3>텍스트 컬럼 고유값</h3>
+          <p class="hint">고유값이 많은 컬럼은 상위 값만 표시합니다(기본 30개).</p>
+        </div>
+        <div class="controls">
+          <div>
+            <label for="uniqueTopN">표시할 고유값 개수(상위 N)</label>
+            <input id="uniqueTopN" type="number" min="1" step="1" value="30" />
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button id="btn-rebuild" type="button">다시 표시</button>
+          </div>
+        </div>
+      </div>
+      <div class="content" id="text-uniques">
+        <div class="muted skeleton">텍스트 고유값을 준비 중...</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h3>결측값이 있는 컬럼</h3>
+          <p class="hint">빈 칸(N/A) 존재 여부와 개수를 정리합니다.</p>
+        </div>
+      </div>
+      <div class="content">
+        <div id="missing-summary" class="muted skeleton">결측 컬럼을 분석 중...</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h3>데이터 미리보기</h3>
+          <p class="hint">최대 100행까지 필터 결과를 테이블로 표시합니다.</p>
+        </div>
+        <div class="controls">
+          <div>
+            <label for="filterMode">필터 모드</label>
+            <select id="filterMode">
+              <option value="all">전체 컬럼에서 부분일치</option>
+              <option value="col">특정 컬럼에서 부분일치</option>
+            </select>
+          </div>
+          <div>
+            <label for="filterColumn">특정 컬럼(필터 모드가 col일 때)</label>
+            <select id="filterColumn"></select>
+          </div>
+          <div>
+            <label for="filterText">필터 입력</label>
+            <input id="filterText" type="text" placeholder="예: 2026, Aetherfield, 1000" />
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button id="btn-filter" type="button">적용</button>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="row-table-wrap">
+          <table id="preview-table">
+            <thead><tr><th>로딩 중...</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="footer" id="preview-footer"></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      ⚠️ 로컬에서 <span class="mono">file://</span>로 열면 브라우저 정책 때문에 <span class="mono">portfolio.csv</span>가 로드되지 않을 수 있어요.
+      GitHub Pages나 간단한 로컬 서버(예: <span class="mono">python -m http.server</span>)로 실행해 주세요.
+    </div>
+  </div>
+
+<script>
+(function(){
+  const CSV_URL = 'portfolio.csv';
+
+  const $ = (id) => document.getElementById(id);
+
+  function parseCSV(text){
+    // 간단하지만 꽤 견고한 CSV 파서 (따옴표/쉼표/줄바꿈 처리)
+    // - 구분자: ,
+    // - 인용부호: "
+    // - 줄바꿈: \r\n, \n
+    const rows = [];
+    let row = [];
+    let field = '';
+    let i = 0;
+    let inQuotes = false;
+
+    const pushField = () => {
+      row.push(field);
+      field = '';
+    };
+    const pushRow = () => {
+      // 마지막 빈 줄 제거 (대부분의 케이스에서)
+      const allEmpty = row.every(v => String(v).trim() === '');
+      if (!(rows.length > 0 && allEmpty && row.length === 1)) {
+        rows.push(row);
+      }
+      row = [];
+    };
+
+    // BOM 제거
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+    for (; i < text.length; i++){
+      const c = text[i];
+
+      if (inQuotes){
+        if (c === '"'){
+          if (text[i+1] === '"'){
+            field += '"';
+            i++;
+          }else{
+            inQuotes = false;
+          }
+        }else{
+          field += c;
+        }
+      }else{
+        if (c === '"'){
+          inQuotes = true;
+        }else if (c === ','){
+          pushField();
+        }else if (c === '\n'){
+          pushField();
+          // \r 처리
+          if (row.length && row[row.length-1] !== undefined && row[row.length-1].endsWith('\r')){
+            row[row.length-1] = row[row.length-1].replace(/\r$/, '');
+          }
+          pushRow();
+        }else if (c === '\r'){
+          // \r는 다음 \n까지 그냥 대기
+          // (표준적으로 \r\n)
+        }else{
+          field += c;
+        }
+      }
+    }
+    // 마지막 필드 처리
+    pushField();
+    if (row.length > 1 || String(row[0]).trim() !== ''){
+      pushRow();
+    }
+
+    // normalize: 같은 행 길이가 안 맞을 수 있어 최대 컬럼 기준으로 맞춤
+    const maxCols = Math.max(...rows.map(r => r.length));
+    return rows.map(r => {
+      if (r.length < maxCols){
+        const rr = r.slice();
+        while(rr.length < maxCols) rr.push('');
+        return rr;
+      }
+      return r;
+    });
+  }
+
+  function isMissingValue(v){
+    // 빈칸/공백만 -> missing
+    return v == null || String(v).trim() === '';
+  }
+
+  function toNumberMaybe(v){
+    // 숫자 후보: 공백 제거 후, 쉼표 제거(예: 1,234)
+    const s = String(v).trim().replace(/,/g,'');
+    if (s === '') return null;
+    // 퍼센트/통화 기호 제거는 보수적으로 하지 않음
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function inferType(values){
+    // values: string[]
+    // 비결측만 대상으로
+    const nonMissing = values.filter(v => !isMissingValue(v));
+    if (nonMissing.length === 0) return { type: 'text', numeric: false };
+
+    let numericCount = 0;
+    for (const v of nonMissing){
+      if (toNumberMaybe(v) !== null) numericCount++;
+    }
+    const numericRatio = numericCount / nonMissing.length;
+
+    // 모두(또는 거의 모두) 숫자면 numeric으로 처리 (허용 오차: 95%)
+    if (numericRatio >= 0.95) return { type: 'number', numeric: true };
+    return { type: 'text', numeric: false };
+  }
+
+  function mean(arr){
+    if (arr.length === 0) return null;
+    let s = 0;
+    for (const x of arr) s += x;
+    return s / arr.length;
+  }
+
+  function uniqTop(values, topN){
+    // values: non-missing string[]
+    // 빈도 내림차순, 동률은 문자열 순 정렬
+    const freq = new Map();
+    for (const v of values){
+      const key = v;
+      freq.set(key, (freq.get(key)||0) + 1);
+    }
+    const items = Array.from(freq.entries()).map(([k, c]) => ({k, c}));
+    items.sort((a,b) => (b.c - a.c) || (a.k.localeCompare(b.k, 'ko')));
+    return { items, topN };
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
+
+  function renderSchema(schema, totalRows, totalCols){
+    const tbody = $('schema-table').querySelector('tbody');
+    tbody.innerHTML = '';
+
+    for (const col of schema){
+      const tr = document.createElement('tr');
+      const summaryParts = [];
+      if (col.type === 'number'){
+        summaryParts.push('numeric');
+        if (col.numericSummary){
+          summaryParts.push(`min ${col.numericSummary.min}`);
+          summaryParts.push(`max ${col.numericSummary.max}`);
+          summaryParts.push(`avg ${col.numericSummary.avg}`);
+        }
+      }else{
+        summaryParts.push(`unique ${col.uniqueCount}`);
+        if (col.topExamples && col.topExamples.length){
+          summaryParts.push(`top: ${col.topExamples.join(', ')}`);
+        }
+      }
+
+      tr.innerHTML = `
+        <td><span class="mono">${escapeHtml(col.name)}</span></td>
+        <td>${col.type === 'number' ? '<span class="pill" style="border-color: rgba(61,220,151,.45); background: rgba(61,220,151,.10); color:#caffea;">number</span>' : '<span class="pill" style="border-color: rgba(255,204,102,.40); background: rgba(255,204,102,.10); color:#ffe7b8;">text</span>'}</td>
+        <td class="right mono">${col.missingCount}</td>
+        <td class="right mono">${col.nonMissingCount}</td>
+        <td class="muted">${escapeHtml(summaryParts.join(' · '))}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    $('kpi-rowscols').textContent = `${totalRows.toLocaleString()} / ${totalCols.toLocaleString()}`;
+  }
+
+  function renderNumericStats(numericCols){
+    const tbody = $('numeric-table').querySelector('tbody');
+    tbody.innerHTML = '';
+
+    if (numericCols.length === 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5" class="muted">숫자 컬럼이 없습니다.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    for (const col of numericCols){
+      const tr = document.createElement('tr');
+      const nsum = col.numericSummary;
+      tr.innerHTML = `
+        <td><span class="mono">${escapeHtml(col.name)}</span></td>
+        <td class="mono">${nsum.min ?? '-'}</td>
+        <td class="mono">${nsum.max ?? '-'}</td>
+        <td class="mono">${nsum.avg ?? '-'}</td>
+        <td class="right mono">${col.missingCount}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderTextUniques(textCols, topN){
+    const wrap = $('text-uniques');
+    wrap.innerHTML = '';
+
+    if (textCols.length === 0){
+      wrap.innerHTML = `<div class="muted">텍스트 컬럼이 없습니다.</div>`;
+      return;
+    }
+
+    for (const col of textCols){
+      const { items } = uniqTop(col.nonMissingValues, topN);
+
+      const topItems = items.slice(0, topN);
+      const totalUnique = items.length;
+
+      const details = document.createElement('details');
+      details.open = false;
+      const summary = document.createElement('summary');
+      summary.textContent = `${col.name} (고유값 ${totalUnique.toLocaleString()})`;
+      details.appendChild(summary);
+
+      const body = document.createElement('div');
+      body.className = 'value-list';
+
+      for (const it of topItems){
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.title = `빈도: ${it.c}`;
+        chip.textContent = `${it.k}  ×${it.c}`;
+        body.appendChild(chip);
+      }
+
+      if (totalUnique > topN){
+        const more = document.createElement('div');
+        more.className = 'muted';
+        more.style.marginTop = '10px';
+        more.textContent = `… 외 ${totalUnique - topN}개 (표시는 상위 ${topN}개만)`;
+        details.appendChild(body);
+        details.appendChild(more);
+      }else{
+        details.appendChild(body);
+      }
+
+      wrap.appendChild(details);
+    }
+  }
+
+  function renderMissingSummary(cols){
+    const missingCols = cols.filter(c => c.missingCount > 0);
+    const el = $('missing-summary');
+    if (missingCols.length === 0){
+      el.innerHTML = `<span class="badge" style="border-color: rgba(61,220,151,.45); background: rgba(61,220,151,.10); color:#caffea;">결측값 없음</span>`;
+      return;
+    }
+    const sorted = missingCols.slice().sort((a,b) => b.missingCount - a.missingCount);
+
+    const itemsHtml = sorted.map(c => {
+      const pct = (c.missingCount / (c.nonMissingCount + c.missingCount)) * 100;
+      const color = pct >= 20 ? 'var(--bad)' : (pct >= 5 ? 'var(--warn)' : 'var(--accent)');
+      return `<span class="badge" style="border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.03); color: var(--text);">
+        <span class="mono">${escapeHtml(c.name)}</span> : ${c.missingCount.toLocaleString()} 빈칸 (${pct.toFixed(1)}%)
+      </span>`;
+    }).join('<br/>');
+
+    el.innerHTML = itemsHtml;
+  }
+
+  function buildPreviewTable(headers, data, filterMode, filterCol, filterText){
+    const maxRows = 100;
+    const tbody = $('preview-table').querySelector('tbody');
+    const thead = $('preview-table').querySelector('thead');
+    tbody.innerHTML = '';
+    thead.innerHTML = '';
+
+    const filter = (filterText || '').trim();
+    if (filter.length === 0){
+      // no filter
+      const slice = data.slice(0, maxRows);
+      // render
+      const trh = document.createElement('tr');
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trh.appendChild(th);
+      });
+      thead.appendChild(trh);
+
+      for (const row of slice){
+        const tr = document.createElement('tr');
+        for (const h of headers){
+          const td = document.createElement('td');
+          td.textContent = row[h];
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      $('preview-footer').textContent = `표시: 1~${Math.min(maxRows, data.length)} / 총 ${data.length.toLocaleString()} 행`;
+      return { filteredCount: data.length };
+    }
+
+    const targetCol = filterCol;
+
+    const filtered = [];
+    for (const row of data){
+      let ok = false;
+      if (filterMode === 'col'){
+        const v = row[targetCol];
+        ok = String(v ?? '').toLowerCase().includes(filter.toLowerCase());
+      }else{
+        ok = headers.some(h => String(row[h] ?? '').toLowerCase().includes(filter.toLowerCase()));
+      }
+      if (ok) filtered.push(row);
+      if (filtered.length > 5000) break; // 안전장치
+    }
+
+    const slice = filtered.slice(0, maxRows);
+
+    const trh = document.createElement('tr');
+    headers.forEach(h => {
+      const th = document.createElement('th');
+      th.textContent = h;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+
+    for (const row of slice){
+      const tr = document.createElement('tr');
+      for (const h of headers){
+        const td = document.createElement('td');
+        td.textContent = row[h];
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
+    $('preview-footer').textContent = `필터 결과: ${filtered.length.toLocaleString()} 행 중 표시: 1~${slice.length.toLocaleString()} 행`;
+    return { filteredCount: filtered.length };
+  }
+
+  let state = {
+    headers: [],
+    data: [],
+    schema: [],
+    textCols: [],
+    numericCols: [],
+  };
+
+  function formatNumber(n){
+    if (n === null || n === undefined) return '-';
+    if (!Number.isFinite(n)) return '-';
+    // 너무 길어지지 않게
+    const abs = Math.abs(n);
+    if (abs !== 0 && (abs >= 1e6 || abs < 1e-3)){
+      return n.toExponential(3);
+    }
+    return (Math.round(n * 1000000) / 1000000).toString();
+  }
+
+  function computeSchema(headers, dataRows){
+    const schema = [];
+    for (const h of headers){
+      const values = dataRows.map(r => r[h] ?? '');
+      const missingCount = values.reduce((acc, v) => acc + (isMissingValue(v) ? 1 : 0), 0);
+      const nonMissingValues = values.filter(v => !isMissingValue(v));
+      const nonMissingCount = nonMissingValues.length;
+
+      const inferred = inferType(values);
+      const col = {
+        name: h,
+        type: inferred.type,
+        missingCount,
+        nonMissingCount,
+        numericSummary: null,
+        uniqueCount: 0,
+        topExamples: []
+      };
+
+      if (col.type === 'number'){
+        const nums = nonMissingValues.map(toNumberMaybe).filter(v => v !== null);
+        if (nums.length === 0){
+          col.type = 'text';
+        }else{
+          const min = Math.min(...nums);
+          const max = Math.max(...nums);
+          const avg = mean(nums);
+          col.numericSummary = { min: formatNumber(min), max: formatNumber(max), avg: formatNumber(avg) };
+          // unique/top not needed
+        }
+      }
+
+      if (col.type !== 'number'){
+        const uniq = new Set(nonMissingValues);
+        col.uniqueCount = uniq.size;
+
+        // 상위 예시 5개(빈도 기반은 나중에 uniques 섹션에서)
+        const counts = new Map();
+        for (const v of nonMissingValues){
+          counts.set(v, (counts.get(v)||0)+1);
+        }
+        const items = Array.from(counts.entries()).map(([k,c])=>({k,c}));
+        items.sort((a,b)=>(b.c-a.c)||(a.k.localeCompare(b.k,'ko')));
+        col.topExamples = items.slice(0,5).map(it=>it.k);
+      }
+
+      schema.push(col);
+    }
+    return schema;
+  }
+
+  async function load(){
+    try{
+      $('status-1').textContent = 'CSV를 불러오는 중...';
+      const res = await fetch(CSV_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      const parsed = parseCSV(text);
+
+      if (parsed.length < 2){
+        throw new Error('CSV에 데이터가 너무 적습니다.');
+      }
+
+      // headers: 1행
+      const headers = parsed[0].map(s => String(s).trim());
+      const rawRows = parsed.slice(1);
+
+      // 비어있는 헤더 처리
+      const finalHeaders = headers.map((h, idx) => {
+        if (!h){
+          return `column_${idx+1}`;
+        }
+        return h;
+      });
+
+      // 객체 배열 구성
+      const data = rawRows.map(r => {
+        const obj = {};
+        for (let i=0; i<finalHeaders.length; i++){
+          obj[finalHeaders[i]] = (r[i] ?? '');
+        }
+        return obj;
+      });
+
+      // 스키마 계산
+      const schema = computeSchema(finalHeaders, data);
+
+      const numericCols = schema.filter(c => c.type === 'number');
+      const textCols = schema.filter(c => c.type !== 'number');
+      const missingCols = schema.filter(c => c.missingCount > 0);
+
+      state = { headers: finalHeaders, data, schema, numericCols, textCols };
+
+      // KPI
+      $('kpi-numeric').textContent = numericCols.length.toString();
+      $('kpi-text').textContent = textCols.length.toString();
+      $('kpi-missingcols').textContent = missingCols.length.toString();
+
+      $('status-1').innerHTML = `✅ 로드 완료: <span class="mono">${data.length.toLocaleString()}</span>행, <span class="mono">${finalHeaders.length.toLocaleString()}</span>컬럼`;
+
+      renderSchema(schema, data.length, finalHeaders.length);
+      renderNumericStats(numericCols);
+
+      renderMissingSummary(schema);
+
+      // filter column selector
+      const fc = $('filterColumn');
+      fc.innerHTML = '';
+      for (const h of finalHeaders){
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        fc.appendChild(opt);
+      }
+      if (finalHeaders.length > 0) fc.value = finalHeaders[0];
+
+      // unique render
+      const topN = Math.max(1, parseInt($('uniqueTopN').value, 10) || 30);
+      renderTextUniques(textCols, topN);
+
+      // preview render initial
+      buildPreviewTable(finalHeaders, data, $('filterMode').value, fc.value, '');
+
+    }catch(err){
+      $('status-1').innerHTML = `<span style="color:var(--bad); font-weight:900;">오류</span>: ${escapeHtml(err.message || String(err))}<br/>` +
+        `브라우저 콘솔을 확인해 주세요. (CSV 파일명: <span class="mono">portfolio.csv</span>)`;
+      // show message
+      $('kpi-rowscols').textContent = '-';
+      $('kpi-numeric').textContent = '-';
+      $('kpi-text').textContent = '-';
+      $('kpi-missingcols').textContent = '-';
+      $('schema-table').querySelector('tbody').innerHTML = `<tr><td colspan="5" class="muted">CSV를 불러오지 못했습니다. </td></tr>`;
+      $('numeric-table').querySelector('tbody').innerHTML = `<tr><td colspan="5" class="muted">데이터 로딩 실패</td></tr>`;
+      $('text-uniques').innerHTML = `<div class="muted">CSV 로딩 실패</div>`;
+      $('missing-summary').innerHTML = `<div class="muted">CSV 로딩 실패</div>`;
+    }
+  }
+
+  $('btn-rebuild').addEventListener('click', () => {
+    const topN = Math.max(1, parseInt($('uniqueTopN').value, 10) || 30);
+    const textCols = state.textCols || [];
+    renderTextUniques(textCols, topN);
+  });
+
+  $('btn-filter').addEventListener('click', () => {
+    const mode = $('filterMode').value;
+    const col = $('filterColumn').value;
+    const text = $('filterText').value;
+    if (!state.data || !state.headers) return;
+    buildPreviewTable(state.headers, state.data, mode, col, text);
+  });
+
+  // enter to filter
+  $('filterText').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      $('btn-filter').click();
+    }
+  });
+
+  // initial
+  load();
+})();
+</script>
+</body>
+</html>
